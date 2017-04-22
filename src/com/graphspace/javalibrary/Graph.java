@@ -23,7 +23,7 @@ public class Graph {
         dataObject.put("k",0);
         dataObject.put("id","P4314611");
         dataObject.put("name","P4314611");
-        dataObject.put("label","Node A");
+        dataObject.put("label","Updated Node A");
         
         nodeElement.put("data", dataObject);
         
