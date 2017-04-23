@@ -1,9 +1,7 @@
 package com.graphspace.javalibrary;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 
 import org.apache.commons.codec.binary.Base64;
@@ -78,7 +76,7 @@ public class ClientApi
     }
     
     //GET Method
-    public String getGraph(String GraphName, String owner_email){
+    public String getGraph(String owner_email){
     	if(owner_email == null){
     		owner_email = username;
     	}
@@ -113,11 +111,60 @@ public class ClientApi
         return result.toString();
     }
     
+    // GET method with ID
+    public String getGraphById(String graphName){
+    	
+    	String id="";
+    	JSONObject jsonObject = (JSONObject) JSONValue.parse(getGraph(username));
+    	long total = (Long) jsonObject.get("total");
+    	if(total > 0)
+    	{
+    		JSONObject graph = (JSONObject)((JSONArray)jsonObject.get("graphs")).get(0);
+    		if(graph.get("name").equals(graphName))
+    		{
+    			id = graph.get("id")+"";
+    		}
+    		else{
+    			graph = (JSONObject)((JSONArray)jsonObject.get("graphs")).get((int)total-1);
+    			id = graph.get("id")+"";
+    		}
+    	}
+    	
+    	HttpGet get = new HttpGet(API_HOST+id);
+        String auth=new StringBuffer(username).append(":").append(password).toString();
+        byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(Charset.forName("US-ASCII")));
+        String authHeader = "Basic " + new String(encodedAuth);
+        get.setHeader("AUTHORIZATION", authHeader);
+        get.setHeader("Content-Type", "application/json");
+        get.setHeader("Accept", "application/json");
+        
+            
+        HttpResponse response=null;
+        String line = "";
+        StringBuffer result = new StringBuffer();
+        
+        HttpClient client = HttpClientBuilder.create().build();
+        try{
+        response = client.execute(get);
+        
+        System.out.println("Response Code : " +response.getStatusLine().getStatusCode());
+        BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+        while ((line = reader.readLine()) != null){ result.append(line); }
+        System.out.println(result.toString());
+        }
+        catch(Exception e){
+        	e.printStackTrace();
+        }
+        
+        
+        return result.toString();
+    }
+    
     // DELETE Method
     public String deleteGraph(String graphName){
     	//TODO use getGraph to get JSON of the graph and retrieve id from parsed JSON
     	String id="";
-    	JSONObject jsonObject = (JSONObject) JSONValue.parse(getGraph(graphName,username));
+    	JSONObject jsonObject = (JSONObject) JSONValue.parse(getGraph(username));
     	long total = (Long) jsonObject.get("total");
     	if(total > 0)
     	{
@@ -166,7 +213,7 @@ public class ClientApi
     public String updateGraph(String graphName, int isPublic){
     	
     	String id="";
-    	JSONObject jsonObject = (JSONObject) JSONValue.parse(getGraph(graphName,username));
+    	JSONObject jsonObject = (JSONObject) JSONValue.parse(getGraph(username));
     	long total = (Long) jsonObject.get("total");
     	if(total > 0)
     	{
@@ -221,6 +268,95 @@ public class ClientApi
         }
         
        
+    }
+    
+     /* GET method(with ID) for layouts
+     * returns list of layouts
+     */
+    public String getLayoutById(String graphName, String owner_email){
+    	if(owner_email == null){
+    		owner_email = username;
+    	}
+    	
+    	String id="";
+    	JSONObject jsonObject = (JSONObject) JSONValue.parse(getGraph(username));
+    	long total = (Long) jsonObject.get("total");
+    	if(total > 0)
+    	{
+    		JSONObject graph = (JSONObject)((JSONArray)jsonObject.get("graphs")).get(0);
+    		if(graph.get("name").equals(graphName))
+    		{
+    			id = graph.get("id")+"";
+    		}
+    		else{
+    			graph = (JSONObject)((JSONArray)jsonObject.get("graphs")).get((int)total-1);
+    			id = graph.get("id")+"";
+    		}
+    	}
+    	
+    	HttpGet get = new HttpGet(API_HOST+id+"/layouts"+"?owner_email="+owner_email);
+        String auth=new StringBuffer(username).append(":").append(password).toString();
+        byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(Charset.forName("US-ASCII")));
+        String authHeader = "Basic " + new String(encodedAuth);
+        get.setHeader("AUTHORIZATION", authHeader);
+        get.setHeader("Content-Type", "application/json");
+        get.setHeader("Accept", "application/json");
+        
+            
+        HttpResponse response=null;
+        String line = "";
+        StringBuffer result = new StringBuffer();
+        
+        HttpClient client = HttpClientBuilder.create().build();
+        try{
+        response = client.execute(get);
+        
+        System.out.println("Response Code : " +response.getStatusLine().getStatusCode());
+        BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+        while ((line = reader.readLine()) != null){ result.append(line); }
+        System.out.println(result.toString());
+        }
+        catch(Exception e){
+        	e.printStackTrace();
+        }
+        
+        
+        return result.toString();
+    }
+    
+     /* GET method for layouts
+     * returns the given layout for the graph
+     */
+    public String getLayout(String graph_id, String layout_id){
+    	
+    	HttpGet get = new HttpGet(API_HOST+graph_id+"/layouts/"+layout_id);
+        String auth=new StringBuffer(username).append(":").append(password).toString();
+        byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(Charset.forName("US-ASCII")));
+        String authHeader = "Basic " + new String(encodedAuth);
+        get.setHeader("AUTHORIZATION", authHeader);
+        get.setHeader("Content-Type", "application/json");
+        get.setHeader("Accept", "application/json");
+        
+            
+        HttpResponse response=null;
+        String line = "";
+        StringBuffer result = new StringBuffer();
+        
+        HttpClient client = HttpClientBuilder.create().build();
+        try{
+        response = client.execute(get);
+        
+        System.out.println("Response Code : " +response.getStatusLine().getStatusCode());
+        BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+        while ((line = reader.readLine()) != null){ result.append(line); }
+        System.out.println(result.toString());
+        }
+        catch(Exception e){
+        	e.printStackTrace();
+        }
+        
+        
+        return result.toString();
     }
     
 }
